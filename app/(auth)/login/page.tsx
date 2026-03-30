@@ -34,8 +34,8 @@ export default function LoginPage() {
         {missing.length > 0 && <div className="login-error">Missing env: {missing.join(', ')}</div>}
         <form onSubmit={onSubmit} className="login-form">
           <label>
-            Email
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
+            Terminal username
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="text" autoComplete="username" required />
           </label>
           <label>
             Password
