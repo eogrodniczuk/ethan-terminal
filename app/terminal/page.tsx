@@ -53,6 +53,38 @@ function classFor(val?: number | null) {
   return val >= 0 ? 'pos' : 'neg';
 }
 
+function buildFallbackMarketResponse(message: string): MarketDashboardResponse {
+  return {
+    snapshot: [],
+    regime: {
+      label: 'Unavailable',
+      score: 0,
+      explanation: message,
+      story: message,
+      policy_implication: message
+    },
+    alerts: [],
+    chart: [],
+    commentary: {
+      main_driver: message,
+      market_implication: message,
+      policy_implication: message
+    },
+    last_updated_epoch_ms: Date.now()
+  } as MarketDashboardResponse;
+}
+
+function buildFallbackAnalyticsResponse(): PortfolioAnalyticsResponse {
+  return {
+    usd_cad: 1.3864,
+    rows: [],
+    metrics: {},
+    beta_table: [],
+    history: [],
+    last_updated_epoch_ms: Date.now()
+  } as PortfolioAnalyticsResponse;
+}
+
 export default function TerminalPage() {
   const [positions, setPositions] = useState<PositionRow[]>([]);
   const [marketOverview, setMarketOverview] = useState<MarketDashboardResponse | null>(null);
@@ -80,71 +112,93 @@ export default function TerminalPage() {
 
   const chartLegendItems = ['Brent Crude', 'US 10Y Yield', 'VIX', 'Gold', 'SPY', 'DXY'];
 
+  const parseJson = async <T,>(res: Response): Promise<T> => {
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`API ${res.status} for ${res.url}: ${text.slice(0, 300)}`);
+    }
+    return (await res.json()) as T;
+  };
+
   const load = useCallback(async (force = false) => {
     const firstLoad = !hasLoadedRef.current;
     if (firstLoad) setLoading(true);
     else setRefreshing(true);
 
-    const { data: authData } = await supabaseBrowser.auth.getUser();
-    const user = authData.user;
+    try {
+      const { data: authData } = await supabaseBrowser.auth.getUser();
+      const user = authData.user;
 
-    if (!user) {
+      if (!user) {
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
+      const [{ data: positionsData, error: positionsError }] = await Promise.all([
+        supabaseBrowser.from('positions').select('*').eq('user_id', user.id).order('sort_order', { ascending: true })
+      ]);
+
+      if (positionsError) {
+        throw new Error(`Supabase positions load failed: ${positionsError.message}`);
+      }
+
+      const currentPositions = (positionsData ?? []) as PositionRow[];
+      setPositions(currentPositions);
+
+      const overviewUrl =
+        `${env.apiBase}/market/dashboard` +
+        `?period=1Y` +
+        `&lookback=252` +
+        `&assets=${encodeURIComponent('Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY')}` +
+        `${force ? '&force=1' : ''}`;
+
+      const chartUrl =
+        `${env.apiBase}/market/dashboard` +
+        `?period=${encodeURIComponent(activeMarketTimeframe.period)}` +
+        `&lookback=${activeMarketTimeframe.lookback}` +
+        `&assets=${encodeURIComponent('Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY')}` +
+        `${force ? '&force=1' : ''}`;
+
+      const [overviewRes, chartRes, analyticsRes] = await Promise.all([
+        fetch(overviewUrl, { cache: 'no-store' }),
+        fetch(chartUrl, { cache: 'no-store' }),
+        fetch(`${env.apiBase}/portfolio/analytics`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ positions: currentPositions, period: '1Y', force }),
+          cache: 'no-store'
+        })
+      ]);
+
+      const overviewJson = await parseJson<MarketDashboardResponse>(overviewRes);
+      const chartJson = await parseJson<MarketDashboardResponse>(chartRes);
+      const analyticsJson = await parseJson<PortfolioAnalyticsResponse>(analyticsRes);
+
+      setMarketOverview(overviewJson);
+      setMarketChart(chartJson);
+      setAnalytics(analyticsJson);
+
+      setLastUpdated(
+        Math.max(
+          overviewJson.last_updated_epoch_ms ?? 0,
+          chartJson.last_updated_epoch_ms ?? 0,
+          analyticsJson.last_updated_epoch_ms ?? 0
+        )
+      );
+    } catch (err) {
+      console.error('Terminal load failed:', err);
+
+      const message = err instanceof Error ? err.message : 'Terminal data failed to load.';
+      setMarketOverview(buildFallbackMarketResponse(message));
+      setMarketChart(buildFallbackMarketResponse(message));
+      setAnalytics(buildFallbackAnalyticsResponse());
+      setLastUpdated(Date.now());
+    } finally {
+      hasLoadedRef.current = true;
       setLoading(false);
       setRefreshing(false);
-      return;
     }
-
-    const [{ data: positionsData }] = await Promise.all([
-      supabaseBrowser.from('positions').select('*').eq('user_id', user.id).order('sort_order', { ascending: true })
-    ]);
-
-    const currentPositions = (positionsData ?? []) as PositionRow[];
-    setPositions(currentPositions);
-
-    const overviewUrl =
-      `${env.apiBase}/market/dashboard` +
-      `?period=1Y` +
-      `&lookback=252` +
-      `&assets=${encodeURIComponent('Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY')}` +
-      `${force ? '&force=1' : ''}`;
-
-    const chartUrl =
-      `${env.apiBase}/market/dashboard` +
-      `?period=${encodeURIComponent(activeMarketTimeframe.period)}` +
-      `&lookback=${activeMarketTimeframe.lookback}` +
-      `&assets=${encodeURIComponent('Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY')}` +
-      `${force ? '&force=1' : ''}`;
-
-    const [overviewRes, chartRes, analyticsRes] = await Promise.all([
-      fetch(overviewUrl, { cache: 'no-store' }),
-      fetch(chartUrl, { cache: 'no-store' }),
-      fetch(`${env.apiBase}/portfolio/analytics`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ positions: currentPositions, period: '1Y', force }),
-        cache: 'no-store'
-      })
-    ]);
-
-    const overviewJson = (await overviewRes.json()) as MarketDashboardResponse;
-    const chartJson = (await chartRes.json()) as MarketDashboardResponse;
-    const analyticsJson = (await analyticsRes.json()) as PortfolioAnalyticsResponse;
-
-    setMarketOverview(overviewJson);
-    setMarketChart(chartJson);
-    setAnalytics(analyticsJson);
-
-    setLastUpdated(
-      Math.max(
-        overviewJson.last_updated_epoch_ms ?? 0,
-        chartJson.last_updated_epoch_ms ?? 0,
-        analyticsJson.last_updated_epoch_ms ?? 0
-      )
-    );
-
-    hasLoadedRef.current = true;
-    setLoading(false);
-    setRefreshing(false);
   }, [activeMarketTimeframe.lookback, activeMarketTimeframe.period]);
 
   useEffect(() => {
@@ -202,7 +256,7 @@ export default function TerminalPage() {
           <>
             <Section title="MKT">
               <div className="snapshot-grid">
-                {marketOverview?.snapshot.map((row) => (
+                {(marketOverview?.snapshot ?? []).map((row) => (
                   <div
                     key={row.Asset}
                     className="bbg-card"
@@ -232,7 +286,7 @@ export default function TerminalPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {marketOverview?.snapshot.map((row) => (
+                          {(marketOverview?.snapshot ?? []).map((row) => (
                             <tr key={row.Asset}>
                               <td className="name-cell">{row.Asset}</td>
                               <td>{fmtNum(row.Last)}</td>
@@ -315,23 +369,23 @@ export default function TerminalPage() {
                 <div className="market-right-stack">
                   <Section title="Regime Monitor">
                     <div className="bbg-note">
-                      <b>{marketOverview?.regime.label}</b>
+                      <b>{marketOverview?.regime?.label ?? 'Unavailable'}</b>
                       <br /><br />
-                      Score: {marketOverview?.regime.score}
+                      Score: {marketOverview?.regime?.score ?? '—'}
                       <br /><br />
-                      {marketOverview?.regime.explanation}
+                      {marketOverview?.regime?.explanation ?? 'No regime explanation available.'}
                       <br /><br />
-                      {marketOverview?.commentary.main_driver}
+                      {marketOverview?.commentary?.main_driver ?? 'No main driver available.'}
                       <br />
-                      {marketOverview?.commentary.market_implication}
+                      {marketOverview?.commentary?.market_implication ?? 'No market implication available.'}
                       <br />
-                      {marketOverview?.commentary.policy_implication}
+                      {marketOverview?.commentary?.policy_implication ?? 'No policy implication available.'}
                     </div>
                   </Section>
 
                   <Section title="Alert Engine">
                     <div className="alert-engine-list">
-                      {marketOverview?.alerts.map((alert, idx) => (
+                      {(marketOverview?.alerts ?? []).map((alert, idx) => (
                         <div className="bbg-note" key={idx}>
                           <b>{alert.level.toUpperCase()} | {alert.signal}</b>
                           <br />
@@ -347,14 +401,14 @@ export default function TerminalPage() {
             <Section title="PORT">
               <div className="summary-grid">
                 {[
-                  ['Portfolio Value', fmtDollar(analytics?.metrics.portfolio_value)],
-                  ['Cash', fmtDollar(analytics?.metrics.cash_value)],
-                  ['1D P&L', fmtDollar(analytics?.metrics.daily_pnl)],
-                  ['U/P&L', fmtDollar(analytics?.metrics.unrealized_pnl)],
-                  ['Gross Exp', fmtPct(analytics?.metrics.gross_exposure_pct)],
-                  ['Delta-Adj Exp', fmtPct(analytics?.metrics.delta_adjusted_exposure_pct)],
-                  ['Port Beta', fmtNum(analytics?.metrics.portfolio_beta)],
-                  ['Largest Wt', fmtPct(analytics?.metrics.largest_weight_pct)]
+                  ['Portfolio Value', fmtDollar(analytics?.metrics?.portfolio_value)],
+                  ['Cash', fmtDollar(analytics?.metrics?.cash_value)],
+                  ['1D P&L', fmtDollar(analytics?.metrics?.daily_pnl)],
+                  ['U/P&L', fmtDollar(analytics?.metrics?.unrealized_pnl)],
+                  ['Gross Exp', fmtPct(analytics?.metrics?.gross_exposure_pct)],
+                  ['Delta-Adj Exp', fmtPct(analytics?.metrics?.delta_adjusted_exposure_pct)],
+                  ['Port Beta', fmtNum(analytics?.metrics?.portfolio_beta)],
+                  ['Largest Wt', fmtPct(analytics?.metrics?.largest_weight_pct)]
                 ].map(([label, value]) => (
                   <div className="bbg-card dark" key={label}>
                     <div className="label amber">{label}</div>
@@ -449,7 +503,7 @@ export default function TerminalPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {analytics?.beta_table.map((row, idx) => (
+                          {(analytics?.beta_table ?? []).map((row, idx) => (
                             <tr key={idx}>
                               <td className="name-cell">{String(row.Ticker)}</td>
                               <td>{String(row.Currency)}</td>
