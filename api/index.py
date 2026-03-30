@@ -860,3 +860,31 @@ def portfolio_analytics(payload: PortfolioRequest):
 
     _cache_set(cache_key, result)
     return result
+
+# --- API-prefixed wrapper routes for Vercel ---
+
+@app.get("/api")
+def api_root():
+    return root()
+
+@app.get("/api/health")
+def api_health():
+    return health()
+
+@app.get("/api/market/dashboard")
+def api_market_dashboard(
+    period: str = "1y",
+    lookback: int = 252,
+    assets: str = "Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY",
+    force: bool = False,
+):
+    return market_dashboard(
+        period=period,
+        lookback=lookback,
+        assets=assets,
+        force=force,
+    )
+
+@app.post("/api/portfolio/analytics")
+def api_portfolio_analytics(payload: PortfolioRequest):
+    return portfolio_analytics(payload)
