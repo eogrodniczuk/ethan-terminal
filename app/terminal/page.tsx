@@ -326,7 +326,7 @@ export default function TerminalPage() {
                               data={marketChart?.chart ?? []}
                               margin={{ top: 8, right: 10, left: 0, bottom: 0 }}
                             >
-                              <CartesianGrid stroke="#262626" />
+                              <CartesianGrid stroke="#1f1f1f" />
                               <XAxis dataKey="date" tick={{ fill: '#e7e7e7', fontSize: 10 }} minTickGap={28} />
                               <YAxis
                                 domain={['auto', 'auto']}
@@ -343,7 +343,7 @@ export default function TerminalPage() {
                                   connectNulls
                                   isAnimationActive={false}
                                   stroke={chartLineColors[key]}
-                                  strokeWidth={1.05}
+                                  strokeWidth={0.9}
                                 />
                               ))}
                             </LineChart>
@@ -386,7 +386,7 @@ export default function TerminalPage() {
                   <Section title="Alert Engine">
                     <div className="alert-engine-list">
                       {(marketOverview?.alerts ?? []).map((alert, idx) => (
-                        <div className="bbg-note alert-engine" key={idx}>
+                        <div className={`bbg-note alert-engine ${alert.level.toLowerCase()}`}>
                           <b>{alert.level.toUpperCase()} | {alert.signal}</b>
                           <br />
                           {alert.detail}

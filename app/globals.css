@@ -1,8 +1,8 @@
 :root {
-  --bg: #000000;
+  --bg: #000000;  
   --panel: #000000;
-  --border: #2d2d2d;
-  --header: #424242;
+  --border: #6a6a6a;
+  --header: #3a3a3a;
   --header-text: #ffffff;
   --accent: #f0a92f;
   --accent2: #373cb7;
@@ -168,7 +168,7 @@ textarea {
 .bbg-card {
   border: var(--panel-border-width) solid var(--border);
   min-height: 56px;
-  padding: 3px 6px;
+  padding: 2px 4px;
   background: #0a0a0a;
 }
 
@@ -185,7 +185,7 @@ textarea {
 
 .bbg-card .value {
   font-size: 18px;
-  line-height: 1.05;
+  line-height: 1.15;
   font-weight: 800;
 }
 
@@ -214,9 +214,9 @@ textarea {
 .bbg-note {
   border: var(--panel-border-width) solid var(--border);
   background: #050505;
-  padding: 5px 6px;
+  padding: 2px 4px;
   font-size: 11px;
-  line-height: 1.25;
+  line-height: 1.15;
   color: #dfdfdf;
   min-height: 100%;
   overflow-wrap: anywhere;
@@ -336,7 +336,7 @@ textarea {
 .bbg-table thead th {
   background: #323232;
   color: #e6e6e6;
-  padding: 3px 6px;
+  padding: 2px 4px;
   border-right: 1px solid #555;
   border-bottom: 1px solid #555;
   text-align: right;
@@ -509,6 +509,18 @@ textarea {
 .regime-monitor b,
 .alert-engine b {
   color: #ffffff;
+}
+
+.alert-engine .bbg-note {
+  border-left: 3px solid #444;
+}
+
+.alert-engine .bbg-note.high {
+  border-left: 3px solid #b32132;
+}
+
+.alert-engine .bbg-note.low {
+  border-left: 3px solid #36c23e;
 }
 
 .regime-monitor .score-label {
