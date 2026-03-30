@@ -516,18 +516,6 @@ textarea {
   color: #ffffff;
 }
 
-.alert-engine .bbg-note {
-  border-left: 3px solid #444;
-}
-
-.alert-engine .bbg-note.high {
-  border-left: 3px solid #b32132;
-}
-
-.alert-engine .bbg-note.low {
-  border-left: 3px solid #36c23e;
-}
-
 .regime-monitor .score-label {
   color: #ffffff;
   font-weight: 800;
