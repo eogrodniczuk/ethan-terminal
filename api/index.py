@@ -861,8 +861,6 @@ def portfolio_analytics(payload: PortfolioRequest):
     _cache_set(cache_key, result)
     return result
 
-# --- API-prefixed wrapper routes for Vercel ---
-
 @app.get("/api")
 def api_root():
     return root()
