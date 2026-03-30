@@ -491,6 +491,30 @@ textarea {
   flex: 0 0 auto;
 }
 
+/* REGIME MONITOR + ALERT ENGINE TEXT */
+
+.regime-monitor,
+.regime-monitor .bbg-note,
+.alert-engine,
+.alert-engine .bbg-note {
+  color: var(--accent);
+}
+
+.regime-monitor strong,
+.alert-engine strong {
+  color: #ffffff;
+}
+
+.regime-monitor b,
+.alert-engine b {
+  color: #ffffff;
+}
+
+.regime-monitor .score-label {
+  color: #ffffff;
+  font-weight: 800;
+}
+
 /* BUTTONS / FORMS */
 
 .bbg-button {
