@@ -368,10 +368,10 @@ export default function TerminalPage() {
 
                 <div className="market-right-stack">
                   <Section title="Regime Monitor">
-                    <div className="bbg-note">
+                    <div className="bbg-note regime-monitor">
                       <b>{marketOverview?.regime?.label ?? 'Unavailable'}</b>
                       <br /><br />
-                      Score: {marketOverview?.regime?.score ?? '—'}
+                      <b className="score-label">Score:</b> {marketOverview?.regime?.score ?? '—'}
                       <br /><br />
                       {marketOverview?.regime?.explanation ?? 'No regime explanation available.'}
                       <br /><br />
@@ -386,7 +386,7 @@ export default function TerminalPage() {
                   <Section title="Alert Engine">
                     <div className="alert-engine-list">
                       {(marketOverview?.alerts ?? []).map((alert, idx) => (
-                        <div className="bbg-note" key={idx}>
+                        <div className="bbg-note alert-engine" key={idx}>
                           <b>{alert.level.toUpperCase()} | {alert.signal}</b>
                           <br />
                           {alert.detail}
