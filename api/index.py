@@ -22,13 +22,15 @@ app.add_middleware(
 )
 
 ASSET_MAP: Dict[str, str] = {
-    "BRENT CRUDE": "BZ=F",
-    "US 10Y YIELD": "^TNX",
+    "Brent Crude": "BZ=F",
+    "US 10Y Yield": "^TNX",
     "VIX": "^VIX",
     "Gold": "GC=F",
-    "DXY": "DX-Y.NYB",
     "SPY": "SPY",
+    "DXY": "DX-Y.NYB",
 }
+
+ASSET_LOOKUP: Dict[str, str] = {k.upper(): k for k in ASSET_MAP.keys()}
 
 FX_CANDIDATES = ["USDCAD=X", "CAD=X"]
 
@@ -361,10 +363,10 @@ def _safe_metric(snapshot: pd.DataFrame, asset: str, column: str, default: float
 
 
 def classify_regime(snapshot: pd.DataFrame, zscores: pd.Series) -> RegimeOutput:
-    oil_5d = _safe_metric(snapshot, "BRENT CRUDE", "5D %")
+    oil_5d = _safe_metric(snapshot, "Brent Crude", "5D %")
     vix_5d = _safe_metric(snapshot, "VIX", "5D %")
     spy_5d = _safe_metric(snapshot, "SPY", "5D %")
-    yield_5d = _safe_metric(snapshot, "US 10Y YIELD", "5D %")
+    yield_5d = _safe_metric(snapshot, "US 10Y Yield", "5D %")
     gold_5d = _safe_metric(snapshot, "Gold", "5D %")
 
     score = 0
@@ -376,7 +378,7 @@ def classify_regime(snapshot: pd.DataFrame, zscores: pd.Series) -> RegimeOutput:
         score += 1
     if spy_5d < -2:
         score += 2
-    if zscores.get("BRENT CRUDE", 0.0) > 1.5:
+    if zscores.get("Brent Crude", 0.0) > 1.5:
         score += 1
     if zscores.get("VIX", 0.0) > 1.5:
         score += 1
@@ -424,12 +426,12 @@ def classify_regime(snapshot: pd.DataFrame, zscores: pd.Series) -> RegimeOutput:
 
 def build_alerts(snapshot: pd.DataFrame, zscores: pd.Series) -> List[Dict[str, str]]:
     alerts: List[Dict[str, str]] = []
-    oil_last = _safe_metric(snapshot, "BRENT CRUDE", "Last")
-    oil_5d = _safe_metric(snapshot, "BRENT CRUDE", "5D %")
+    oil_last = _safe_metric(snapshot, "Brent Crude", "Last")
+    oil_5d = _safe_metric(snapshot, "Brent Crude", "5D %")
     vix_last = _safe_metric(snapshot, "VIX", "Last")
     vix_5d = _safe_metric(snapshot, "VIX", "5D %")
     spy_5d = _safe_metric(snapshot, "SPY", "5D %")
-    yield_5d = _safe_metric(snapshot, "US 10Y YIELD", "5D %")
+    yield_5d = _safe_metric(snapshot, "US 10Y Yield", "5D %")
     gold_5d = _safe_metric(snapshot, "Gold", "5D %")
     dxy_5d = _safe_metric(snapshot, "DXY", "5D %")
 
@@ -445,7 +447,7 @@ def build_alerts(snapshot: pd.DataFrame, zscores: pd.Series) -> List[Dict[str, s
         alerts.append({"level": "Medium", "signal": "Gold failing as a hedge", "detail": "Equities are down but gold is not acting defensively."})
     if dxy_5d > 1:
         alerts.append({"level": "Low", "signal": "Dollar strength", "detail": f"DXY is up {dxy_5d:.2f}% over 5 days."})
-    if zscores.get("BRENT CRUDE", 0.0) > 1.5 and zscores.get("VIX", 0.0) > 1.5:
+    if zscores.get("Brent Crude", 0.0) > 1.5 and zscores.get("VIX", 0.0) > 1.5:
         alerts.append({"level": "High", "signal": "Cross-asset stress confirmation", "detail": "Oil and VIX are both materially above their recent normal ranges."})
     if not alerts:
         alerts.append({"level": "Low", "signal": "No acute stress trigger", "detail": "Nothing has crossed the default dashboard thresholds today."})
@@ -520,7 +522,7 @@ def health():
 def market_dashboard(
     period: str = "1y",
     lookback: int = 252,
-    assets: str = "BRENT CRUDE,US 10Y YIELD,VIX,Gold,SPY,DXY",
+    assets: str = "Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY",
     force: bool = False,
 ):
     normalized_period = _normalize_period(period)
@@ -538,8 +540,16 @@ def market_dashboard(
         if cached is not None:
             return cached
 
-    chosen = [a.strip() for a in assets.split(",") if a.strip() in ASSET_MAP]
-    mapped = [ASSET_MAP[a] for a in chosen]
+    requested_assets = [a.strip() for a in assets.split(",") if a.strip()]
+    chosen: list[str] = []
+    mapped: list[str] = []
+
+    for requested in requested_assets:
+        canonical = ASSET_LOOKUP.get(requested.upper())
+        if canonical:
+            chosen.append(canonical)
+            mapped.append(ASSET_MAP[canonical])
+
     raw = _download_multi_close(mapped, normalized_period)
 
     if raw.empty:
@@ -861,19 +871,22 @@ def portfolio_analytics(payload: PortfolioRequest):
     _cache_set(cache_key, result)
     return result
 
+
 @app.get("/api")
 def api_root():
     return root()
+
 
 @app.get("/api/health")
 def api_health():
     return health()
 
+
 @app.get("/api/market/dashboard")
 def api_market_dashboard(
     period: str = "1y",
     lookback: int = 252,
-    assets: str = "BRENT CRUDE,US 10Y YIELD,VIX,Gold,SPY,DXY",
+    assets: str = "Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY",
     force: bool = False,
 ):
     return market_dashboard(
@@ -882,6 +895,7 @@ def api_market_dashboard(
         assets=assets,
         force=force,
     )
+
 
 @app.post("/api/portfolio/analytics")
 def api_portfolio_analytics(payload: PortfolioRequest):

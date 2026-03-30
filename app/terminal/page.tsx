@@ -102,8 +102,8 @@ export default function TerminalPage() {
   );
 
   const chartLineColors: Record<string, string> = {
-    'BRENT CRUDE': '#f4a830',
-    'US 10Y YIELD': '#7ec8ff',
+    'Brent Crude': '#f4a830',
+    'US 10Y Yield': '#7ec8ff',
     VIX: '#ff8c8c',
     Gold: '#83d98c',
     SPY: '#c6c6ff',
@@ -386,7 +386,7 @@ export default function TerminalPage() {
                   <Section title="Alert Engine">
                     <div className="alert-engine-list">
                       {(marketOverview?.alerts ?? []).map((alert, idx) => (
-                        <div className={`bbg-note alert-engine ${alert.level.toLowerCase()}`}>
+                        <div className={`bbg-note alert-engine ${alert.level.toLowerCase()}`} key={idx}>
                           <b>{alert.level.toUpperCase()} | {alert.signal}</b>
                           <br />
                           {alert.detail}
@@ -404,7 +404,7 @@ export default function TerminalPage() {
                   ['Portfolio Value', fmtDollar(analytics?.metrics?.portfolio_value)],
                   ['Cash', fmtDollar(analytics?.metrics?.cash_value)],
                   ['1D P&L', fmtDollar(analytics?.metrics?.daily_pnl)],
-                  ['Unrealized/P&L', fmtDollar(analytics?.metrics?.unrealized_pnl)],
+                  ['U/P&L', fmtDollar(analytics?.metrics?.unrealized_pnl)],
                   ['Gross Exp', fmtPct(analytics?.metrics?.gross_exposure_pct)],
                   ['Delta-Adj Exp', fmtPct(analytics?.metrics?.delta_adjusted_exposure_pct)],
                   ['Port Beta', fmtNum(analytics?.metrics?.portfolio_beta)],
@@ -425,9 +425,10 @@ export default function TerminalPage() {
                         <thead>
                           <tr>
                             <th>Name</th>
+                            <th>CCY</th>
                             <th>Last Px</th>
                             <th>MV (CAD)</th>
-                            <th>CCY</th>
+                            <th>Wt</th>
                             <th>1D P&L</th>
                             <th>U/P&L</th>
                             <th>%1D</th>
@@ -436,7 +437,6 @@ export default function TerminalPage() {
                             <th>%3M</th>
                             <th>%YTD</th>
                             <th>Beta</th>
-                            <th>Wt</th>
                           </tr>
                         </thead>
                         <tbody>
