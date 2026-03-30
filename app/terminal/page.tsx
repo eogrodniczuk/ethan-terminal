@@ -367,7 +367,7 @@ export default function TerminalPage() {
                 </div>
 
                 <div className="market-right-stack">
-                  <Section title="Regime Monitor">
+                  <Section title="Macro Stress Score">
                     <div className="bbg-note regime-monitor">
                       <b>{marketOverview?.regime?.label ?? 'Unavailable'}</b>
                       <br /><br />
