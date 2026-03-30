@@ -21,26 +21,26 @@ export function TerminalNav() {
 
   return (
     <nav className="terminal-nav">
-      {items.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={clsx(
-            'terminal-tab',
-            pathname.startsWith(item.href) && 'terminal-tab-active'
-          )}
-        >
-          {item.label}
-        </Link>
-      ))}
+      <div className="terminal-nav-left">
+        {items.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={clsx(
+              'terminal-tab',
+              pathname.startsWith(item.href) && 'terminal-tab-active'
+            )}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
 
-      {/* LOG OUT BUTTON */}
-      <button
-        onClick={handleLogout}
-        className="terminal-tab"
-      >
-        LOG OUT
-      </button>
+      <div className="terminal-nav-right">
+        <button type="button" onClick={handleLogout} className="terminal-tab">
+          LOG OUT
+        </button>
+      </div>
     </nav>
   );
 }

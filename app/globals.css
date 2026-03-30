@@ -84,11 +84,13 @@ textarea {
 
 .terminal-nav-left {
   display: flex;
+  align-items: center;
   gap: 2px;
 }
 
 .terminal-nav-right {
   display: flex;
+  align-items: center;
 }
 
 .terminal-tab {
