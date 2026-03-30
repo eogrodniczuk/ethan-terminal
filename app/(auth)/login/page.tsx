@@ -30,7 +30,7 @@ export default function LoginPage() {
     <main className="login-shell">
       <div className="login-card">
         <div className="login-title">ETHAN&apos;S TERMINAL</div>
-        <div className="login-subtitle">Private Bloomberg-inspired portal for terminal.neurovelo.com</div>
+        <div className="login-subtitle">Access your market intelligence from anywhere.</div>
         {missing.length > 0 && <div className="login-error">Missing env: {missing.join(', ')}</div>}
         <form onSubmit={onSubmit} className="login-form">
           <label>
