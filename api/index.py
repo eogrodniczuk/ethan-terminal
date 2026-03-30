@@ -22,8 +22,8 @@ app.add_middleware(
 )
 
 ASSET_MAP: Dict[str, str] = {
-    "Brent Crude": "BZ=F",
-    "US 10Y Yield": "^TNX",
+    "BRENT CRUDE": "BZ=F",
+    "US 10Y YIELD": "^TNX",
     "VIX": "^VIX",
     "Gold": "GC=F",
     "DXY": "DX-Y.NYB",
