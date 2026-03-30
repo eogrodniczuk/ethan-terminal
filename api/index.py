@@ -361,10 +361,10 @@ def _safe_metric(snapshot: pd.DataFrame, asset: str, column: str, default: float
 
 
 def classify_regime(snapshot: pd.DataFrame, zscores: pd.Series) -> RegimeOutput:
-    oil_5d = _safe_metric(snapshot, "Brent Crude", "5D %")
+    oil_5d = _safe_metric(snapshot, "BRENT CRUDE", "5D %")
     vix_5d = _safe_metric(snapshot, "VIX", "5D %")
     spy_5d = _safe_metric(snapshot, "SPY", "5D %")
-    yield_5d = _safe_metric(snapshot, "US 10Y Yield", "5D %")
+    yield_5d = _safe_metric(snapshot, "US 10Y YIELD", "5D %")
     gold_5d = _safe_metric(snapshot, "Gold", "5D %")
 
     score = 0
@@ -376,7 +376,7 @@ def classify_regime(snapshot: pd.DataFrame, zscores: pd.Series) -> RegimeOutput:
         score += 1
     if spy_5d < -2:
         score += 2
-    if zscores.get("Brent Crude", 0.0) > 1.5:
+    if zscores.get("BRENT CRUDE", 0.0) > 1.5:
         score += 1
     if zscores.get("VIX", 0.0) > 1.5:
         score += 1
@@ -424,12 +424,12 @@ def classify_regime(snapshot: pd.DataFrame, zscores: pd.Series) -> RegimeOutput:
 
 def build_alerts(snapshot: pd.DataFrame, zscores: pd.Series) -> List[Dict[str, str]]:
     alerts: List[Dict[str, str]] = []
-    oil_last = _safe_metric(snapshot, "Brent Crude", "Last")
-    oil_5d = _safe_metric(snapshot, "Brent Crude", "5D %")
+    oil_last = _safe_metric(snapshot, "BRENT CRUDE", "Last")
+    oil_5d = _safe_metric(snapshot, "BRENT CRUDE", "5D %")
     vix_last = _safe_metric(snapshot, "VIX", "Last")
     vix_5d = _safe_metric(snapshot, "VIX", "5D %")
     spy_5d = _safe_metric(snapshot, "SPY", "5D %")
-    yield_5d = _safe_metric(snapshot, "US 10Y Yield", "5D %")
+    yield_5d = _safe_metric(snapshot, "US 10Y YIELD", "5D %")
     gold_5d = _safe_metric(snapshot, "Gold", "5D %")
     dxy_5d = _safe_metric(snapshot, "DXY", "5D %")
 
@@ -445,7 +445,7 @@ def build_alerts(snapshot: pd.DataFrame, zscores: pd.Series) -> List[Dict[str, s
         alerts.append({"level": "Medium", "signal": "Gold failing as a hedge", "detail": "Equities are down but gold is not acting defensively."})
     if dxy_5d > 1:
         alerts.append({"level": "Low", "signal": "Dollar strength", "detail": f"DXY is up {dxy_5d:.2f}% over 5 days."})
-    if zscores.get("Brent Crude", 0.0) > 1.5 and zscores.get("VIX", 0.0) > 1.5:
+    if zscores.get("BRENT CRUDE", 0.0) > 1.5 and zscores.get("VIX", 0.0) > 1.5:
         alerts.append({"level": "High", "signal": "Cross-asset stress confirmation", "detail": "Oil and VIX are both materially above their recent normal ranges."})
     if not alerts:
         alerts.append({"level": "Low", "signal": "No acute stress trigger", "detail": "Nothing has crossed the default dashboard thresholds today."})
@@ -520,7 +520,7 @@ def health():
 def market_dashboard(
     period: str = "1y",
     lookback: int = 252,
-    assets: str = "Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY",
+    assets: str = "BRENT CRUDE,US 10Y YIELD,VIX,Gold,SPY,DXY",
     force: bool = False,
 ):
     normalized_period = _normalize_period(period)
@@ -873,7 +873,7 @@ def api_health():
 def api_market_dashboard(
     period: str = "1y",
     lookback: int = 252,
-    assets: str = "Brent Crude,US 10Y Yield,VIX,Gold,SPY,DXY",
+    assets: str = "BRENT CRUDE,US 10Y YIELD,VIX,Gold,SPY,DXY",
     force: bool = False,
 ):
     return market_dashboard(

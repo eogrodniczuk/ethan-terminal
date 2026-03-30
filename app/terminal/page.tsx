@@ -386,7 +386,7 @@ export default function TerminalPage() {
                   <Section title="Alert Engine">
                     <div className="alert-engine-list">
                       {(marketOverview?.alerts ?? []).map((alert, idx) => (
-                        <div className="bbg-note" key={idx}>
+                        <div className={`bbg-note alert-engine ${alert.level.toLowerCase()}`}>
                           <b>{alert.level.toUpperCase()} | {alert.signal}</b>
                           <br />
                           {alert.detail}
