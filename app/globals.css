@@ -647,6 +647,34 @@ textarea {
   padding: 8px;
 }
 
+/* FLASH ANIMATIONS */
+
+@keyframes flashGreen {
+  0% {
+    background-color: #51ee6c;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes flashRed {
+  0% {
+    background-color: #ff1e3e;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.flash-up {
+  animation: flashGreen 0.9s ease-out;
+}
+
+.flash-down {
+  animation: flashRed 0.9s ease-out;
+}
+
 /* RESPONSIVE */
 
 @media (max-width: 1200px) {

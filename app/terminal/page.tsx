@@ -94,7 +94,11 @@ export default function TerminalPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const [marketTimeframe, setMarketTimeframe] = useState<MarketTimeframeLabel>('1Y');
+  const [flashMap, setFlashMap] = useState<Record<string, 'up' | 'down' | null>>({});
+
   const hasLoadedRef = useRef(false);
+  const prevSnapshotRef = useRef<Record<string, number>>({});
+  const flashTimeoutRef = useRef<number | null>(null);
 
   const activeMarketTimeframe = useMemo(
     () => MARKET_TIMEFRAMES.find((t) => t.label === marketTimeframe) ?? MARKET_TIMEFRAMES[4],
@@ -175,9 +179,34 @@ export default function TerminalPage() {
       const chartJson = await parseJson<MarketDashboardResponse>(chartRes);
       const analyticsJson = await parseJson<PortfolioAnalyticsResponse>(analyticsRes);
 
+      const newFlashMap: Record<string, 'up' | 'down' | null> = {};
+
+      overviewJson.snapshot.forEach((row) => {
+        const prev = prevSnapshotRef.current[row.Asset];
+        const curr = row.Last;
+
+        if (typeof curr === 'number' && !Number.isNaN(curr)) {
+          if (prev !== undefined) {
+            if (curr > prev) newFlashMap[row.Asset] = 'up';
+            else if (curr < prev) newFlashMap[row.Asset] = 'down';
+            else newFlashMap[row.Asset] = null;
+          }
+          prevSnapshotRef.current[row.Asset] = curr;
+        }
+      });
+
       setMarketOverview(overviewJson);
       setMarketChart(chartJson);
       setAnalytics(analyticsJson);
+      setFlashMap(newFlashMap);
+
+      if (flashTimeoutRef.current) {
+        window.clearTimeout(flashTimeoutRef.current);
+      }
+
+      flashTimeoutRef.current = window.setTimeout(() => {
+        setFlashMap({});
+      }, 900);
 
       setLastUpdated(
         Math.max(
@@ -211,6 +240,14 @@ export default function TerminalPage() {
     }, REFRESH_MS);
     return () => window.clearInterval(timer);
   }, [load]);
+
+  useEffect(() => {
+    return () => {
+      if (flashTimeoutRef.current) {
+        window.clearTimeout(flashTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const weightRows = useMemo(() => {
     const rows = analytics?.rows ?? [];
@@ -259,7 +296,13 @@ export default function TerminalPage() {
                 {(marketOverview?.snapshot ?? []).map((row) => (
                   <div
                     key={row.Asset}
-                    className="bbg-card"
+                    className={`bbg-card ${
+                      flashMap[row.Asset] === 'up'
+                        ? 'flash-up'
+                        : flashMap[row.Asset] === 'down'
+                          ? 'flash-down'
+                          : ''
+                    }`}
                     style={{ background: (row['1D %'] ?? 0) >= 0 ? '#36c23e' : '#b32132' }}
                   >
                     <div className="label black">{row.Asset}</div>
