@@ -102,8 +102,8 @@ export default function TerminalPage() {
   );
 
   const chartLineColors: Record<string, string> = {
-    'Brent Crude': '#f4a830',
-    'US 10Y Yield': '#7ec8ff',
+    'BRENT CRUDE': '#f4a830',
+    'US 10Y YIELD': '#7ec8ff',
     VIX: '#ff8c8c',
     Gold: '#83d98c',
     SPY: '#c6c6ff',
@@ -326,7 +326,7 @@ export default function TerminalPage() {
                               data={marketChart?.chart ?? []}
                               margin={{ top: 8, right: 10, left: 0, bottom: 0 }}
                             >
-                              <CartesianGrid stroke="#1f1f1f" />
+                              <CartesianGrid stroke="#1a1a1a" />
                               <XAxis dataKey="date" tick={{ fill: '#e7e7e7', fontSize: 10 }} minTickGap={28} />
                               <YAxis
                                 domain={['auto', 'auto']}
@@ -386,7 +386,7 @@ export default function TerminalPage() {
                   <Section title="Alert Engine">
                     <div className="alert-engine-list">
                       {(marketOverview?.alerts ?? []).map((alert, idx) => (
-                        <div className={`bbg-note alert-engine ${alert.level.toLowerCase()}`}>
+                        <div className="bbg-note" key={idx}>
                           <b>{alert.level.toUpperCase()} | {alert.signal}</b>
                           <br />
                           {alert.detail}
