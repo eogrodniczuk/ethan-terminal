@@ -1,10 +1,10 @@
 :root {
   --bg: #000000;
   --panel: #000000;
-  --border: #565656;
-  --header: #4a4a4a;
+  --border: #424242;
+  --header: #2d2d2d;
   --header-text: #ffffff;
-  --accent: #f4a830;
+  --accent: #f0a92f;
   --text: #e7e7e7;
   --muted: #a7a7a7;
   --green: #43ae47;
@@ -428,7 +428,7 @@ textarea {
 .chart-toggle-active {
   background: var(--accent);
   color: #000;
-  border-color: #5b430d;
+  border-color: #373cb7;
 }
 
 .chart-frame {
