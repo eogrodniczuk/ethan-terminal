@@ -5,6 +5,7 @@
   --header: #2d2d2d;
   --header-text: #ffffff;
   --accent: #f0a92f;
+  --accent2: #373cb7;
   --text: #e7e7e7;
   --muted: #a7a7a7;
   --green: #43ae47;
@@ -426,9 +427,9 @@ textarea {
 }
 
 .chart-toggle-active {
-  background: var(--accent);
+  background: var(--accent2);
   color: #000;
-  border-color: #373cb7;
+  border-color: #242863;
 }
 
 .chart-frame {
