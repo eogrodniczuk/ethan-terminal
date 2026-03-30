@@ -428,7 +428,7 @@ textarea {
 
 .chart-toggle-active {
   background: var(--accent2);
-  color: #000;
+  color: #d5d5d5;
   border-color: #242863;
 }
 
