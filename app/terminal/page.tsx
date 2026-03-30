@@ -260,7 +260,7 @@ export default function TerminalPage() {
                   <div
                     key={row.Asset}
                     className="bbg-card"
-                    style={{ background: (row['1D %'] ?? 0) >= 0 ? '#3fa043' : '#8f1a20' }}
+                    style={{ background: (row['1D %'] ?? 0) >= 0 ? '#36c23e' : '#b32132' }}
                   >
                     <div className="label black">{row.Asset}</div>
                     <div className="value black">{fmtNum(row.Last)}</div>
