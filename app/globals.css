@@ -75,11 +75,20 @@ textarea {
 
 .terminal-nav {
   display: flex;
-  gap: 2px;
+  justify-content: space-between;
+  align-items: center;
   border-bottom: 1px solid #232323;
   padding-bottom: 4px;
   margin-bottom: 6px;
-  flex-wrap: wrap;
+}
+
+.terminal-nav-left {
+  display: flex;
+  gap: 2px;
+}
+
+.terminal-nav-right {
+  display: flex;
 }
 
 .terminal-tab {
