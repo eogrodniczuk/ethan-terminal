@@ -16,21 +16,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-    supabaseBrowser.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setSession(data.session ?? null);
-      setLoading(false);
-    });
-    const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
-    });
-    return () => {
-      mounted = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
+  let mounted = true;
+
+  supabaseBrowser.auth.getSession().then(({ data }) => {
+    if (!mounted) return;
+    setSession(data.session ?? null);
+    setLoading(false);
+  });
+
+  const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_event, session) => {
+    setSession(session);
+    setLoading(false);
+  });
+
+  const handleUnload = () => {
+    supabaseBrowser.auth.signOut();
+  };
+
+  window.addEventListener('beforeunload', handleUnload);
+
+  return () => {
+    mounted = false;
+    sub.subscription.unsubscribe();
+    window.removeEventListener('beforeunload', handleUnload);
+  };
+}, []);
 
   const value = useMemo(() => ({ session, loading }), [session, loading]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
